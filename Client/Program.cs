@@ -12,6 +12,5 @@ class Program
             Shell shell = new Shell(httpClient);
             await shell.Run();
         }
-        Console.ReadLine(); // Keep console open
     }
 }

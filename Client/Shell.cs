@@ -33,7 +33,7 @@ namespace Client
                         selectedOption -= !(selectedOption - 1 < 0) ? 1 : 0;
                         break;
                     case ConsoleKey.DownArrow:
-                        selectedOption += selectedOption + 1 < menuOptions.Length ? 1 : 0;
+                        selectedOption += (selectedOption + 1 < menuOptions.Length) ? 1 : 0;
                         break;
                     case ConsoleKey.Enter:
                         await ExecuteOption(menuOptions[selectedOption]);
@@ -53,8 +53,8 @@ namespace Client
             switch (option)
             {
                 case "Get information":
-                    string content = await MakeGetRequest();
-                    Console.WriteLine("Operation returned: " + content);
+                    string response = await MakeGetRequest();
+                    Console.WriteLine("Operation returned: " + response);
                     break;
                 default:
                     Console.WriteLine("Operation returned: " + option.Length);

@@ -10,20 +10,27 @@ namespace Client
     public class Shell
     {
         private readonly HttpClient _httpClient;
-        static int selectedOption = 0;
+
+        private enum MenuItem
+        {
+            GetInfo,
+            Option2,
+            Option3,
+        };
 
         public Shell(HttpClient httpClient)
         {
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _httpClient = httpClient;
         }
         public async Task Run()
         {
             string[] menuOptions = { "Get information", "Option 2", "Option 3" };
+            int selectedOption = 0;
             ConsoleKeyInfo keyPress;
             do
             {
                 Console.Clear();
-                DisplayMenu(menuOptions);
+                DisplayMenu(menuOptions, selectedOption);
 
                 keyPress = Console.ReadKey();
 
@@ -36,28 +43,28 @@ namespace Client
                         selectedOption += (selectedOption + 1 < menuOptions.Length) ? 1 : 0;
                         break;
                     case ConsoleKey.Enter:
-                        await ExecuteOption(menuOptions[selectedOption]);
+                        await ExecuteOption((MenuItem)selectedOption);
                         break;
                 }
             } while (keyPress.Key != ConsoleKey.Escape);
         }
 
-        private async Task ExecuteOption(string option)
+        private async Task ExecuteOption(MenuItem selectedOption)
         {
             int originalTop = Console.CursorTop;
 
             Console.SetCursorPosition(0, originalTop + 2);
 
-            Console.WriteLine("Executing: " + option);
+            Console.WriteLine("Executing: " + selectedOption.ToString());
 
-            switch (option)
+            switch (selectedOption)
             {
-                case "Get information":
+                case MenuItem.GetInfo:
                     string response = await MakeGetRequest();
                     Console.WriteLine("Operation returned: " + response);
                     break;
                 default:
-                    Console.WriteLine("Operation returned: " + option.Length);
+                    Console.WriteLine("Default operation encountered...");
                     break;
             }
 
@@ -67,12 +74,12 @@ namespace Client
             Console.SetCursorPosition(0, originalTop);
         }
 
-        private void DisplayMenu(string[] menuOptions)
+        private void DisplayMenu(string[] menuOptions, int highlightedIndex)
         {
             Console.WriteLine("Select an option:");
             for (int i = 0; i < menuOptions.Length; i++)
             {
-                if (i == selectedOption)
+                if (i == highlightedIndex)
                 {
                     Console.BackgroundColor = ConsoleColor.Gray;
                     Console.ForegroundColor = ConsoleColor.Black;
@@ -109,12 +116,20 @@ namespace Client
             //    }
             //}
 
-
-            var response = await _httpClient.GetAsync("api/prompt");
-            if (response.IsSuccessStatusCode)
-                return await response.Content.ReadAsStringAsync();
-            else
-                return $"Error: {response.StatusCode}";
+            try
+            {
+                var response = await _httpClient.GetAsync("api/prompt");
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadAsStringAsync();
+                else
+                    return $"Error: {response.StatusCode}";
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e.Message}");
+                return string.Empty;
+            }
+            
         }
     }
 }
